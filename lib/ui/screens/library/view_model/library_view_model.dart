@@ -7,6 +7,8 @@ class LibraryViewModel extends ChangeNotifier {
   final SongRepository songRepository;
   final PlayerState playerState;
   List<Song>? _songs;
+  bool _isLoading = true;
+  String? _error;
 
   LibraryViewModel({required this.songRepository, required this.playerState}) {
     playerState.addListener(notifyListeners);
@@ -14,8 +16,10 @@ class LibraryViewModel extends ChangeNotifier {
     // init
     _init();
   }
-
-  List<Song> get songs => _songs == null ? [] : _songs!;
+List<Song>? get songs => _songs;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+  
 
   @override
   void dispose() {
@@ -25,9 +29,19 @@ class LibraryViewModel extends ChangeNotifier {
 
   void _init() async {
     // 1 - Fetch songs
-    _songs = await songRepository.fetchSongs();
+    try {
+      _isLoading = true;
+      notifyListeners();
 
     // 2 - notify listeners
+     _songs = await songRepository.fetchSongs();
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+      _songs = null;
+    }
+
+    _isLoading = false;
     notifyListeners();
   }
 

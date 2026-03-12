@@ -10,7 +10,7 @@ class LibraryContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 1- Read the globbal song repository
-    LibraryViewModel mv = context.watch<LibraryViewModel>();
+    final mv = context.watch<LibraryViewModel>();
 
     return Padding(
       padding: const EdgeInsets.all(20.0),
@@ -20,17 +20,29 @@ class LibraryContent extends StatelessWidget {
           SizedBox(height: 16),
           Text("Library", style: AppTextStyles.heading),
           SizedBox(height: 50),
-      
+
           Expanded(
-            child: ListView.builder(
-              itemCount: mv.songs.length,
-              itemBuilder: (context, index) => SongTile(
-                song: mv.songs[index],
-                isPlaying: mv.isSongPlaying(mv.songs[index]) ,
-                onTap: () {
-                  mv.start(mv.songs[index]);
-                },
-              ),
+            child: Builder(
+              builder: (context) {
+                if (mv.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (mv.error != null) {
+                  return Center(child: Text(mv.error!));
+                }
+
+                return ListView.builder(
+                  itemCount: mv.songs!.length,
+                  itemBuilder: (context, index) => SongTile(
+                    song: mv.songs![index],
+                    isPlaying: mv.isSongPlaying(mv.songs![index]),
+                    onTap: () {
+                      mv.start(mv.songs![index]);
+                    },
+                  ),
+                );
+              },
             ),
           ),
         ],
